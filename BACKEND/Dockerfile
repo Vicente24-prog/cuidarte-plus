@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:20-alpine
 
 WORKDIR /app
 
@@ -15,6 +15,6 @@ RUN mkdir -p uploads/contracts uploads/documentos && \
 
 USER node
 
-EXPOSE 3000
+EXPOSE 4000
 
 CMD ["node", "src/app.js"]

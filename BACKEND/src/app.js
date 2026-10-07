@@ -17,9 +17,10 @@ const auditRoutes = require("./routes/audit");
 const rolesRoutes = require("./routes/roles");
 
 const app = express();
+
 app.disable("x-powered-by");
 
-const allowedOrigins = (process.env.FRONTEND_URL || "http://localhost:3333")
+const allowedOrigins = (process.env.FRONTEND_URL || "")
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
@@ -27,7 +28,6 @@ const allowedOrigins = (process.env.FRONTEND_URL || "http://localhost:3333")
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Permite herramientas locales que no envían Origin
       if (!origin || allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
@@ -36,6 +36,7 @@ app.use(
     },
   })
 );
+
 
 app.use(express.json());
 app.use(morgan("dev"));

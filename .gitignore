@@ -1,3 +1,11 @@
 BACKEND/node_modules
 FRONTEND/node_modules
+
 .env
+.env.*
+!.env.example
+
+BACKEND/.env
+FRONTEND/.env
+
+*.log

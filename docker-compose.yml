@@ -3,9 +3,9 @@ services:
     image: postgres:15-alpine
     container_name: cuidarteplus-postgres-ev
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      POSTGRES_DB: ${POSTGRES_DB:-cuidarteplus}
+      POSTGRES_USER: ${POSTGRES_USER:?Falta POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Falta POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:?Falta POSTGRES_DB}
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - "${PORT_POSTGRES:-15442}:5432"
@@ -14,7 +14,11 @@ services:
       - ./BACKEND/sql/dump-cuidarteplus.sql:/tmp/dump-cuidarteplus.sql:ro
       - ./BACKEND/sql/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-cuidarteplus}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"
+        ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -29,11 +33,12 @@ services:
     container_name: cuidarteplus-backend-ev
     hostname: cuidarteplus-api
     environment:
-      - PORT=4000
-      - DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@cuidarteplus-postgres-ev:5432/${POSTGRES_DB:-cuidarteplus}
-      - NODE_ENV=${NODE_ENV:-production}
-      - JWT_SECRET=${JWT_SECRET:-your-secret-key-change-in-production}
-      - FRONTEND_URL=http://localhost:${PORT_FRONTEND:-3333}
+      PORT: 4000
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@cuidarteplus-postgres-ev:5432/${POSTGRES_DB}
+      NODE_ENV: ${NODE_ENV:-production}
+      JWT_SECRET: ${JWT_SECRET:?Falta JWT_SECRET}
+      FRONTEND_URL: http://localhost:${PORT_FRONTEND:-3333}
+      MAX_UPLOAD_SIZE_BYTES: ${MAX_UPLOAD_SIZE_BYTES:-10485760}
     ports:
       - "${PORT_BACKEND:-4444}:4000"
     depends_on:
@@ -54,9 +59,10 @@ services:
     container_name: cuidarteplus-frontend-ev
     hostname: cuidarteplus-web
     ports:
-      - "${PORT_FRONTEND:-3333}:80"
+      - "${PORT_FRONTEND:-3333}:8080"
     depends_on:
-      - cuidarteplus-backend-ev
+      cuidarteplus-backend-ev:
+        condition: service_started
     networks:
       - cuidarteplus-network
     restart: unless-stopped
@@ -68,4 +74,3 @@ networks:
   cuidarteplus-network:
     driver: bridge
     name: cuidarteplus-network
-

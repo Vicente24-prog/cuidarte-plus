@@ -4,16 +4,20 @@ const { pool } = require("../db");
 const jwt = require("jsonwebtoken");
 const delayMiddleware = require("../middleware/delay");
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || "inseguro";
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+  throw new Error("JWT_SECRET no está configurado");
+}
 
 // Configurar multer para almacenar en memoria
-const MAX_FILE_SIZE =
-  Number(process.env.MAX_UPLOAD_SIZE_BYTES) || 5 * 1024 * 1024;
+const MAX_UPLOAD_SIZE_BYTES =
+  Number.parseInt(process.env.MAX_UPLOAD_SIZE_BYTES || "10485760", 10);
 
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: MAX_FILE_SIZE,
+    fileSize: MAX_UPLOAD_SIZE_BYTES,
   },
   fileFilter: (req, file, cb) => {
     const allowedMimes = [
